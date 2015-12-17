@@ -1,0 +1,219 @@
+From 0a189376b81206ba7afac429b6a67f3c943ea0d5 Mon Sep 17 00:00:00 2001
+From: checko <checko@gmail.com>
+Date: Wed, 9 Dec 2015 11:05:06 +0800
+Subject: [PATCH 2/3] add to lunch combo. boot ok
+
+---
+ common/tools/fsl-sdcard-partition.sh |  8 ++--
+ imx6/AndroidProducts.mk              |  1 +
+ imx6/etc/init.rc                     |  8 +---
+ imx6/etc/ueventd.freescale.rc        |  3 +-
+ imx6/vendorsetup.sh                  |  2 +
+ imx6/wandboard.mk                    | 73 ++++++++++++++++++++++++++++++++++++
+ wandboard/BoardConfig.mk             |  6 +--
+ 7 files changed, 86 insertions(+), 15 deletions(-)
+ create mode 100644 imx6/wandboard.mk
+
+diff --git a/common/tools/fsl-sdcard-partition.sh b/common/tools/fsl-sdcard-partition.sh
+index e55b32b..84e4bd0 100755
+--- a/common/tools/fsl-sdcard-partition.sh
++++ b/common/tools/fsl-sdcard-partition.sh
+@@ -83,10 +83,10 @@ fi
+ function format_android
+ {
+     echo "formating android images"
+-    mkfs.ext4 ${node}${part}4 -L data
+-    mkfs.ext4 ${node}${part}5 -Lsystem
+-    mkfs.ext4 ${node}${part}6 -Lcache
+-    mkfs.ext4 ${node}${part}7 -Ldevice
++    yes | mkfs.ext4 ${node}${part}4 -L data
++    yes | mkfs.ext4 ${node}${part}5 -Lsystem
++    yes | mkfs.ext4 ${node}${part}6 -Lcache
++    yes | mkfs.ext4 ${node}${part}7 -Ldevice
+ }
+ 
+ function flash_android
+diff --git a/imx6/AndroidProducts.mk b/imx6/AndroidProducts.mk
+index 70ce2c8..f8f6c52 100644
+--- a/imx6/AndroidProducts.mk
++++ b/imx6/AndroidProducts.mk
+@@ -35,3 +35,4 @@ PRODUCT_MAKEFILES := \
+   $(LOCAL_DIR)/hdmidongle_6dq.mk \
+   $(LOCAL_DIR)/sabresd_6sx.mk \
+   $(LOCAL_DIR)/sabreauto_6sx.mk \
++  $(LOCAL_DIR)/wandboard.mk
+diff --git a/imx6/etc/init.rc b/imx6/etc/init.rc
+index ee6b1a3..f8cb7ca 100755
+--- a/imx6/etc/init.rc
++++ b/imx6/etc/init.rc
+@@ -32,7 +32,7 @@ on early-init
+ on init
+     sysclktz 0
+ 
+-    loglevel 3
++    loglevel 7
+ 
+     # setup the global environment
+     export SHM_MOUNTPOINT /mnt/shm
+@@ -490,7 +490,7 @@ on boot
+ 
+ 
+ #  Enable adb security for JB4.2.2
+-    setprop ro.adb.secure 1
++    setprop ro.adb.secure 0
+ 
+ #  Set GPU 3D minimum clock to 3/64
+    write /sys/bus/platform/drivers/galcore/gpu3DMinClock 3
+@@ -567,9 +567,6 @@ on property:vold.decrypt=trigger_shutdown_framework
+     class_reset late_start
+     class_reset main
+ 
+-on property:ro.boot.selinux=disabled
+-   start console
+-
+ on property:sys.powerctl=*
+     powerctl ${sys.powerctl}
+ 
+@@ -608,7 +605,6 @@ service console /system/bin/sh
+     console
+     user root
+     group root
+-    disabled
+ 
+ #on property:ro.debuggable=1
+ #    start console
+diff --git a/imx6/etc/ueventd.freescale.rc b/imx6/etc/ueventd.freescale.rc
+index 1d6f3a2..9ce7c06 100644
+--- a/imx6/etc/ueventd.freescale.rc
++++ b/imx6/etc/ueventd.freescale.rc
+@@ -1,5 +1,5 @@
+ /dev/pmem_gpu             0660   system     graphics
+-/dev/ttymxc4              0660   bluetooth  bluetooth
++/dev/ttymxc2              0660   bluetooth  bluetooth
+ /dev/snd/*                0660   system     audio
+ /dev/ttyUSB*              0640   radio      radio
+ /dev/ttyACM*              0640   radio      radio
+@@ -11,7 +11,6 @@
+ /dev/mxc_ipu              0660   media      system
+ /dev/mxc_vpu              0660   media      system
+ /dev/uinput               0660   system     bluetooth
+-/dev/ttymxc2              0660   system     gps
+ /dev/ttya0                0660   system     gps
+ /dev/ptya0                0660   system     gps
+ /dev/ttya1                0660   system     gps
+diff --git a/imx6/vendorsetup.sh b/imx6/vendorsetup.sh
+index 1162901..d75fb28 100644
+--- a/imx6/vendorsetup.sh
++++ b/imx6/vendorsetup.sh
+@@ -15,3 +15,5 @@ add_lunch_combo sabreauto_6sx-eng
+ add_lunch_combo sabreauto_6sx-user
+ add_lunch_combo hdmidongle_6dq-eng
+ add_lunch_combo hdmidongle_6dq-user
++add_lunch_combo wandboard-eng
++add_lunch_combo wandboard-user
+diff --git a/imx6/wandboard.mk b/imx6/wandboard.mk
+new file mode 100644
+index 0000000..c9ceac2
+--- /dev/null
++++ b/imx6/wandboard.mk
+@@ -0,0 +1,73 @@
++# This is a FSL Android Reference Design platform based on i.MX6Q ARD board
++# It will inherit from FSL core product which in turn inherit from Google generic
++
++$(call inherit-product, device/fsl/imx6/imx6.mk)
++$(call inherit-product-if-exists,vendor/google/products/gms.mk)
++
++ifneq ($(wildcard device/fsl/wandboard/fstab_nand.freescale),)
++$(shell touch device/fsl/wandboard/fstab_nand.freescale)
++endif
++
++ifneq ($(wildcard device/fsl/wandboard/fstab.freescale),)
++$(shell touch device/fsl/wandboard/fstab.freescale)
++endif
++
++# Overrides
++PRODUCT_NAME := wandboard
++PRODUCT_DEVICE := wandboard
++
++PRODUCT_PACKAGES += \
++	libbt-vendor \
++	bt_vendor.conf
++
++PRODUCT_COPY_FILES += \
++	device/fsl/wandboard/init.rc:root/init.freescale.rc \
++	device/fsl/wandboard/gpsreset.sh:system/etc/gpsreset.sh \
++	device/fsl/wandboard/audio_policy.conf:system/etc/audio_policy.conf \
++	device/fsl/wandboard/audio_effects.conf:system/vendor/etc/audio_effects.conf
++
++PRODUCT_COPY_FILES +=	\
++	external/linux-firmware-imx/firmware/vpu/vpu_fw_imx6d.bin:system/lib/firmware/vpu/vpu_fw_imx6d.bin 	\
++	external/linux-firmware-imx/firmware/vpu/vpu_fw_imx6q.bin:system/lib/firmware/vpu/vpu_fw_imx6q.bin
++PRODUCT_SYSTEM_VERITY_PARTITION := /dev/block/mmcblk2p5
++$(call inherit-product, build/target/product/verity.mk)
++
++# wifi files
++PRODUCT_COPY_FILES += \
++	device/fsl/wandboard/brcm-firmware/brcmfmac4329-sdio.bin:system/etc/firmware/brcm/brcmfmac4329-sdio.bin \
++	device/fsl/wandboard/brcm-firmware/brcmfmac4329-sdio.txt:system/etc/firmware/brcm/brcmfmac4329-sdio.txt \
++	device/fsl/wandboard/brcm-firmware/brcmfmac4330-sdio.bin:system/etc/firmware/brcm/brcmfmac4330-sdio.bin \
++	device/fsl/wandboard/brcm-firmware/brcmfmac4330-sdio.txt:system/etc/firmware/brcm/brcmfmac4330-sdio.txt \
++	device/fsl/wandboard/brcm-firmware/bcm4329.hcd:system/etc/firmware/brcm/bcm4329.hcd \
++	device/fsl/wandboard/brcm-firmware/bcm4330.hcd:system/etc/firmware/brcm/bcm4330.hcd \
++	device/fsl/wandboard/brcm-firmware/wifi_reset:system/bin/wifi_reset \
++	device/fsl/wandboard/brcm-firmware/bt_reset:system/bin/bt_reset
++
++
++# touch files
++PRODUCT_COPY_FILES += \
++	device/fsl/common/input/eGalax_Touch_Screen.idc:system/usr/idc/fusion_Touch_Screen.idc
++
++# GPU files
++
++DEVICE_PACKAGE_OVERLAYS := device/fsl/wandboard/overlay
++
++PRODUCT_CHARACTERISTICS := tablet
++
++PRODUCT_AAPT_CONFIG += xlarge large tvdpi hdpi
++
++PRODUCT_COPY_FILES += \
++	frameworks/native/data/etc/tablet_core_hardware.xml:system/etc/permissions/tablet_core_hardware.xml \
++	frameworks/native/data/etc/android.hardware.camera.xml:system/etc/permissions/android.hardware.camera.xml \
++	frameworks/native/data/etc/android.hardware.camera.front.xml:system/etc/permissions/android.hardware.camera.front.xml \
++	frameworks/native/data/etc/android.hardware.wifi.xml:system/etc/permissions/android.hardware.wifi.xml \
++	frameworks/native/data/etc/android.hardware.wifi.direct.xml:system/etc/permissions/android.hardware.wifi.direct.xml \
++	frameworks/native/data/etc/android.hardware.sensor.light.xml:system/etc/permissions/android.hardware.sensor.light.xml \
++	frameworks/native/data/etc/android.hardware.faketouch.xml:system/etc/permissions/android.hardware.faketouch.xml \
++	frameworks/native/data/etc/android.software.sip.voip.xml:system/etc/permissions/android.software.sip.voip.xml \
++	frameworks/native/data/etc/android.hardware.usb.host.xml:system/etc/permissions/android.hardware.usb.host.xml \
++	frameworks/native/data/etc/android.hardware.usb.accessory.xml:system/etc/permissions/android.hardware.usb.accessory.xml \
++	frameworks/native/data/etc/android.hardware.bluetooth_le.xml:system/etc/permissions/android.hardware.bluetooth_le.xml \
++	frameworks/native/data/etc/android.hardware.consumerir.xml:system/etc/permissions/android.hardware.consumerir.xml \
++	frameworks/native/data/etc/android.hardware.ethernet.xml:system/etc/permissions/android.hardware.ethernet.xml \
++	device/fsl/wandboard/required_hardware.xml:system/etc/permissions/required_hardware.xml
+diff --git a/wandboard/BoardConfig.mk b/wandboard/BoardConfig.mk
+index 5ce3ce0..2e5b50c 100644
+--- a/wandboard/BoardConfig.mk
++++ b/wandboard/BoardConfig.mk
+@@ -101,7 +101,7 @@ $(error "TARGET_USERIMAGES_USE_UBIFS and TARGET_USERIMAGES_USE_EXT4 config open
+ endif
+ endif
+ 
+-BOARD_KERNEL_CMDLINE := console=ttymxc0,115200 init=/init video=mxcfb0:dev=ldb,bpp=32 video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off vmalloc=400M androidboot.console=ttymxc0 consoleblank=0 androidboot.hardware=freescale cma=384M
++BOARD_KERNEL_CMDLINE := console=ttymxc0,115200 init=/init video=mxcfb0:dev=hdmi,1280x1024M@60,bpp=32 video=mxcfb1:off video=mxcfb2:off video=mxcfb3:off vmalloc=400M androidboot.console=ttymxc0 consoleblank=0 androidboot.hardware=freescale cma=384M androidboot.selinux=disabled androidboot.dm_verify=disabled
+ 
+ ifeq ($(TARGET_USERIMAGES_USE_UBIFS),true)
+ #UBI boot command line.
+@@ -125,8 +125,8 @@ IMX6_CONSUMER_IR_HAL := true
+ #TARGET_KERNEL_DEFCONF := imx_v7_android_defconfig
+ #TARGET_BOARD_DTS_CONFIG := imx6q:imx6q-sabresd.dtb imx6dl:imx6dl-sabresd.dtb imx6q-ldo:imx6q-sabresd-ldo.dtb
+ TARGET_KERNEL_DEFCONF := wand_lolli_defconfig
+-TARGET_BOOTLOADER_CONFIG := wandboard_spl_android_defconfig
+-TARGET_BOARD_DTS_CONFIG := imx6q-wandboard.dtb imx6dl-wandboard.dtb
++TARGET_BOOTLOADER_CONFIG := imx6dl:mx6dlsabresdandroid_config
++TARGET_BOARD_DTS_CONFIG := imx6q:imx6q-wandboard.dtb imx6dl:imx6dl-wandboard.dtb
+ 
+ BOARD_SEPOLICY_DIRS := \
+        device/fsl/imx6/sepolicy \
+-- 
+1.9.1
+

@@ -1,0 +1,183 @@
+From b2dce35f4a7faacae816a31482415ac986bafb07 Mon Sep 17 00:00:00 2001
+From: checko <checko@gmail.com>
+Date: Fri, 11 Dec 2015 15:02:29 +0800
+Subject: [PATCH] just overwritten..
+
+---
+ alsa/config_cs42888.h  |  1 +
+ alsa/config_sgtl5000.h | 63 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ alsa/config_wm8958.h   |  1 +
+ alsa/config_wm8962.h   |  1 +
+ alsa/tinyalsa_hal.c    | 10 ++++----
+ wlan/Android.mk        |  2 +-
+ 6 files changed, 73 insertions(+), 5 deletions(-)
+ create mode 100644 alsa/config_sgtl5000.h
+
+diff --git a/alsa/config_cs42888.h b/alsa/config_cs42888.h
+index 162ccf1..a89d7a7 100644
+--- a/alsa/config_cs42888.h
++++ b/alsa/config_cs42888.h
+@@ -29,6 +29,7 @@ static struct audio_card  cs42888_card = {
+             AUDIO_DEVICE_OUT_WIRED_HEADSET |
+             AUDIO_DEVICE_OUT_WIRED_HEADPHONE |
+             AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET |
++            AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET |
+             AUDIO_DEVICE_OUT_ALL_SCO |
+             AUDIO_DEVICE_OUT_DEFAULT ),
+     .supported_in_devices = (
+diff --git a/alsa/config_sgtl5000.h b/alsa/config_sgtl5000.h
+new file mode 100644
+index 0000000..799a005
+--- /dev/null
++++ b/alsa/config_sgtl5000.h
+@@ -0,0 +1,63 @@
++/*
++ * Copyright (C) 2011 The Android Open Source Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++/* Copyright (C) 2012 Freescale Semiconductor, Inc. */
++
++#ifndef ANDROID_INCLUDE_IMX_CONFIG_SGTL5000_H
++#define ANDROID_INCLUDE_IMX_CONFIG_SGTL5000_H
++
++#include "audio_hardware.h"
++
++/* ALSA cards for IMX, these must be defined according different board / kernel config*/
++static struct audio_card  sgtl5000_card = {
++    .name = "sgtl5000-audio",
++    .driver_name = "sgtl5000-audio",
++    .supported_out_devices = (AUDIO_DEVICE_OUT_EARPIECE |
++            AUDIO_DEVICE_OUT_SPEAKER |
++            AUDIO_DEVICE_OUT_WIRED_HEADSET |
++            AUDIO_DEVICE_OUT_WIRED_HEADPHONE |
++            AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET |
++            AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET |
++            AUDIO_DEVICE_OUT_ALL_SCO |
++            AUDIO_DEVICE_OUT_DEFAULT),
++    .supported_in_devices = (
++            AUDIO_DEVICE_IN_COMMUNICATION |
++            AUDIO_DEVICE_IN_AMBIENT |
++            AUDIO_DEVICE_IN_BUILTIN_MIC |
++            AUDIO_DEVICE_IN_WIRED_HEADSET |
++            AUDIO_DEVICE_IN_BACK_MIC |
++            AUDIO_DEVICE_IN_ALL_SCO |
++            AUDIO_DEVICE_IN_DEFAULT),
++    .defaults            = NULL,
++    .bt_output           = NULL,
++    .speaker_output      = NULL,
++    .hs_output           = NULL,
++    .earpiece_output     = NULL,
++    .vx_hs_mic_input     = NULL,
++    .mm_main_mic_input   = NULL,
++    .vx_main_mic_input   = NULL,
++    .mm_hs_mic_input     = NULL,
++    .vx_bt_mic_input     = NULL,
++    .mm_bt_mic_input     = NULL,
++    .card                = 0,
++    .out_rate            = 0,
++    .out_channels        = 0,
++    .out_format          = 0,
++    .in_rate             = 0,
++    .in_channels         = 0,
++    .in_format           = 0,
++};
++
++#endif  /* ANDROID_INCLUDE_IMX_CONFIG_HDMI_H */
+diff --git a/alsa/config_wm8958.h b/alsa/config_wm8958.h
+index 6d9533f..6b652ad 100644
+--- a/alsa/config_wm8958.h
++++ b/alsa/config_wm8958.h
+@@ -479,6 +479,7 @@ static struct audio_card  wm8958_card = {
+             AUDIO_DEVICE_OUT_WIRED_HEADSET |
+             AUDIO_DEVICE_OUT_WIRED_HEADPHONE |
+             AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET |
++            AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET |
+             AUDIO_DEVICE_OUT_ALL_SCO |
+             AUDIO_DEVICE_OUT_DEFAULT),
+     .supported_in_devices = (
+diff --git a/alsa/config_wm8962.h b/alsa/config_wm8962.h
+index 582be53..b963ebe 100644
+--- a/alsa/config_wm8962.h
++++ b/alsa/config_wm8962.h
+@@ -206,6 +206,7 @@ static struct audio_card  wm8962_card = {
+             AUDIO_DEVICE_OUT_WIRED_HEADSET |
+             AUDIO_DEVICE_OUT_WIRED_HEADPHONE |
+             AUDIO_DEVICE_OUT_ANLG_DOCK_HEADSET |
++            AUDIO_DEVICE_OUT_DGTL_DOCK_HEADSET |
+             AUDIO_DEVICE_OUT_ALL_SCO |
+             AUDIO_DEVICE_OUT_DEFAULT ),
+     .supported_in_devices = (
+diff --git a/alsa/tinyalsa_hal.c b/alsa/tinyalsa_hal.c
+index a4644ac..0a5c1f7 100644
+--- a/alsa/tinyalsa_hal.c
++++ b/alsa/tinyalsa_hal.c
+@@ -46,7 +46,7 @@
+ #include "config_nullcard.h"
+ #include "config_spdif.h"
+ #include "config_cs42888.h"
+-
++#include "config_sgtl5000.h"
+ 
+ /* ALSA ports for IMX */
+ #define PORT_MM     0
+@@ -54,6 +54,7 @@
+ #define PORT_SPDIF  6 /*not used*/
+ #define PORT_HDMI   0
+ 
++
+ /*align the definition in kernel for hdmi audio*/
+ #define HDMI_PERIOD_SIZE       192
+ #define PLAYBACK_HDMI_PERIOD_COUNT      8
+@@ -95,6 +96,7 @@
+ 
+ /*"null_card" must be in the end of this array*/
+ struct audio_card *audio_card_list[SUPPORT_CARD_NUM] = {
++    &sgtl5000_card,
+     &wm8958_card,
+     &wm8962_card,
+     &hdmi_card,
+@@ -490,10 +492,9 @@ static int get_card_for_device(struct imx_audio_device *adev, int device, unsign
+ 
+     if (flag == PCM_OUT ) {
+         for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
+-            if(adev->card_list[i]->supported_out_devices & device) {
++           if(adev->card_list[i]->supported_out_devices & device) {
+                   card = adev->card_list[i]->card;
+-                  break;
+-            }
++           }
+         }
+     } else {
+         for(i = 0; i < MAX_AUDIO_CARD_NUM; i++) {
+@@ -3337,6 +3338,7 @@ static int scan_available_device(struct imx_audio_device *adev, bool rescanusb,
+     }
+     adev->audio_card_num = k;
+     /*must have one card*/
++    ALOGW("###################MAIN AUDIO CARD:%s\n",adev->card_list[0]->name);
+     if(!adev->card_list[0]) {
+         ALOGE("no supported sound card found, aborting.");
+         return  -EINVAL;
+diff --git a/wlan/Android.mk b/wlan/Android.mk
+index 5fb1071..25f5781 100644
+--- a/wlan/Android.mk
++++ b/wlan/Android.mk
+@@ -1,4 +1,4 @@
+ atheros_dirs := compat-wireless
+ ifeq ($(BOARD_WLAN_DEVICE),$(filter $(BOARD_WLAN_DEVICE),ar6003 UNITE))
+-    include $(call all-subdir-makefiles,$(atheros_dirs))
++    #include $(call all-subdir-makefiles,$(atheros_dirs))
+ endif
+-- 
+1.9.1
+

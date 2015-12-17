@@ -1,0 +1,46 @@
+From 2f51c7ad6a0d2bd42b346093bd78e52c8cd41947 Mon Sep 17 00:00:00 2001
+From: checko <checko@gmail.com>
+Date: Thu, 10 Dec 2015 16:34:49 +0800
+Subject: [PATCH 3/3] revert back: 1.say Yes to partition , this cause SD card
+ size error 2. loglevel back to 3 (no need to debug init)
+
+---
+ common/tools/fsl-sdcard-partition.sh | 8 ++++----
+ imx6/etc/init.rc                     | 2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/common/tools/fsl-sdcard-partition.sh b/common/tools/fsl-sdcard-partition.sh
+index 84e4bd0..e55b32b 100755
+--- a/common/tools/fsl-sdcard-partition.sh
++++ b/common/tools/fsl-sdcard-partition.sh
+@@ -83,10 +83,10 @@ fi
+ function format_android
+ {
+     echo "formating android images"
+-    yes | mkfs.ext4 ${node}${part}4 -L data
+-    yes | mkfs.ext4 ${node}${part}5 -Lsystem
+-    yes | mkfs.ext4 ${node}${part}6 -Lcache
+-    yes | mkfs.ext4 ${node}${part}7 -Ldevice
++    mkfs.ext4 ${node}${part}4 -L data
++    mkfs.ext4 ${node}${part}5 -Lsystem
++    mkfs.ext4 ${node}${part}6 -Lcache
++    mkfs.ext4 ${node}${part}7 -Ldevice
+ }
+ 
+ function flash_android
+diff --git a/imx6/etc/init.rc b/imx6/etc/init.rc
+index f8cb7ca..c972caf 100755
+--- a/imx6/etc/init.rc
++++ b/imx6/etc/init.rc
+@@ -32,7 +32,7 @@ on early-init
+ on init
+     sysclktz 0
+ 
+-    loglevel 7
++    loglevel 3
+ 
+     # setup the global environment
+     export SHM_MOUNTPOINT /mnt/shm
+-- 
+1.9.1
+

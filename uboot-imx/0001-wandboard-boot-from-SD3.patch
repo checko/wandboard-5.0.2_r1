@@ -1,0 +1,25 @@
+From 4c5bfc40016a05f13393fe47b422278f5979a2e4 Mon Sep 17 00:00:00 2001
+From: checko <checko@gmail.com>
+Date: Wed, 9 Dec 2015 11:02:27 +0800
+Subject: [PATCH] wandboard boot from SD3
+
+---
+ board/freescale/mx6sabresd/mx6sabresd.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/board/freescale/mx6sabresd/mx6sabresd.c b/board/freescale/mx6sabresd/mx6sabresd.c
+index d24eea1..9646438 100644
+--- a/board/freescale/mx6sabresd/mx6sabresd.c
++++ b/board/freescale/mx6sabresd/mx6sabresd.c
+@@ -549,7 +549,7 @@ int board_mmc_getcd(struct mmc *mmc)
+ 		ret = !gpio_get_value(USDHC2_CD_GPIO);
+ 		break;
+ 	case USDHC3_BASE_ADDR:
+-		ret = !gpio_get_value(USDHC3_CD_GPIO);
++		ret = 1; /* wandboard : assum always boot from SD3 *?
+ 		break;
+ 	case USDHC4_BASE_ADDR:
+ 		ret = 1; /* eMMC/uSDHC4 is always present */
+-- 
+1.9.1
+
